@@ -1,3 +1,5 @@
+*.keystore
+obj
 R.java
 
 # Built application files

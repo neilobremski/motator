@@ -21,8 +21,11 @@ mkdir -p $MOTATOR/obj
 echo "Building R.java (resources file)"
 $BUILD_TOOLS/aapt package -f -m -J src -M $MOTATOR/AndroidManifest.xml -S $MOTATOR/res -I $ANDROID_JAR
 
-echo "Compiling Code"
+echo "Compiling Java Code"
 javac -source 1.7 -target 1.7 -d $MOTATOR/obj -classpath $MOTATOR/src -bootclasspath $ANDROID_JAR $MOTATOR/src/life/nosk/motator/*.java
+
+echo "Compiling Kotlin Code"
+kotlinc -d $MOTATOR/obj -classpath $MOTATOR/obj:$ANDROID_JAR -include-runtime $MOTATOR/src/life/nosk/motator/*.kt
 
 echo "Converting to Dalvik"
 $BUILD_TOOLS/dx --dex --output=$MOTATOR/bin/classes.dex $MOTATOR/obj
