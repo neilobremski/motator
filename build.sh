@@ -13,7 +13,9 @@ KEYSTORE=mykey.keystore
 
 # Make sure important directories exist
 mkdir -p $MOTATOR/res/drawable
+rm -rf $MOTATOR/bin
 mkdir -p $MOTATOR/bin
+rm -rf $MOTATOR/obj
 mkdir -p $MOTATOR/obj
 
 # TODO: switch to aapt2
@@ -22,11 +24,23 @@ echo "Building R.java (resources file)"
 $BUILD_TOOLS/aapt package -f -m -J src -M $MOTATOR/AndroidManifest.xml -S $MOTATOR/res -I $ANDROID_JAR
 
 echo "Compiling Java Code"
-javac -source 1.7 -target 1.7 -d $MOTATOR/obj -classpath $MOTATOR/src -bootclasspath $ANDROID_JAR $MOTATOR/src/life/nosk/motator/*.java
+javac -source 1.7 -target 1.8 -d $MOTATOR/obj -classpath $MOTATOR/src -bootclasspath $ANDROID_JAR $MOTATOR/src/life/nosk/motator/*.java
 
 echo "Compiling Kotlin Code"
-kotlinc -d $MOTATOR/obj -classpath $MOTATOR/obj:$ANDROID_JAR -include-runtime $MOTATOR/src/life/nosk/motator/*.kt
+kotlinc -jvm-target 1.8 -include-runtime -d $MOTATOR/obj/k.jar -classpath $MOTATOR/obj:$ANDROID_JAR $MOTATOR/src/life/nosk/motator/*.kt
 
+echo "Extracting Compiled Classes"
+pushd $MOTATOR/obj
+jar xf k.jar
+popd
+rm $MOTATOR/obj/k.jar
+# fixes the following:
+# PARSE ERROR:
+# unsupported class file version 53.0
+# ...while parsing META-INF/versions/9/module-info.class
+rm -rf $MOTATOR/obj/META-INF
+
+# TODO: switch to d8 (requires build tools v 28+)
 echo "Converting to Dalvik"
 $BUILD_TOOLS/dx --dex --output=$MOTATOR/bin/classes.dex $MOTATOR/obj
 
