@@ -1,8 +1,10 @@
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical">
 
     <Button
         android:id="@+id/my_button"
@@ -17,4 +19,4 @@
         android:layout_centerVertical="true"
         android:text="@string/hello_msg"
         tools:context=".MainActivity" />
-</RelativeLayout>
+</LinearLayout>
