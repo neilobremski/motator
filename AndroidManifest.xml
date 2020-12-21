@@ -5,7 +5,7 @@
     a:versionCode='0'
     a:versionName='0'>
 
-    <application a:label='@string/app_name'>
+	<application a:label='@string/app_name' a:icon='@drawable/nolan'>
         <activity a:name='life.nosk.motator.MainActivity'>
              <intent-filter>
                 <category a:name='android.intent.category.LAUNCHER'/>
