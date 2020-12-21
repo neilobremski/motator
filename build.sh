@@ -10,6 +10,7 @@ BUILD_TOOLS=/usr/lib/android-sdk/build-tools/27.0.1
 # TODO: stablize keystore w/o checking into GIT
 # Create keystore: keytool -genkeypair -validity 365 -keystore mykey.keystore -keyalg RSA -keysize 2048
 KEYSTORE=mykey.keystore
+KEYSTORE_PASSWORD=password
 
 # Make sure important directories exist
 mkdir -p $MOTATOR/res/drawable
@@ -56,4 +57,4 @@ echo "Aligning APK"
 $BUILD_TOOLS/zipalign -f 4 $MOTATOR/bin/motator.unaligned.apk $MOTATOR/bin/motator.apk
 
 echo "Signing APK"
-java -jar $BUILD_TOOLS/apksigner.jar sign --ks $KEYSTORE $MOTATOR/bin/motator.apk
+java -jar $BUILD_TOOLS/apksigner.jar sign --ks $KEYSTORE --ks-pass "pass:$KEYSTORE_PASSWORD" $MOTATOR/bin/motator.apk
