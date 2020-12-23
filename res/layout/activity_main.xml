@@ -13,6 +13,7 @@
         android:text="@string/my_button_text"/>
 
     <TextView
+        android:id="@+id/the_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
