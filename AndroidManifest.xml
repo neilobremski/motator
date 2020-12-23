@@ -13,4 +13,10 @@
              </intent-filter>
         </activity>
     </application>
+
+    <uses-permission a:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission a:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-sdk a:minSdkVersion="11" a:targetSdkVersion="23" />
+
 </manifest>
