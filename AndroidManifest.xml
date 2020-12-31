@@ -15,7 +15,10 @@
     </application>
 
     <uses-permission a:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission a:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission a:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission a:name="android.permission.INTERNET" />
+    <uses-permission a:name="android.permission.ACCESS_NETWORK_STATE"  />
+    <uses-permission a:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-sdk a:minSdkVersion="11" a:targetSdkVersion="23" />
 
