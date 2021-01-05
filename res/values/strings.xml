@@ -1,7 +1,11 @@
 <resources>
    <string name="app_name">Motator</string>
-   <string name="hello_msg">Hello Android!</string>
+   <string name="hello_msg">Distance: 1.65 mi ... Time: 0:13:09
+   Speed: 7.62 MPH ... Pace: 7:45</string>
    <string name="menu_settings">Settings</string>
    <string name="title_activity_main">Motator</string>
-   <string name="my_button_text">Push Me</string>
+   <string name="btn_stop_text">STOP</string>
+   <string name="btn_play_text">PLAY</string>
+   <string name="btn_pause_text">PAUSE</string>
+   <string name="btn_share_text">SHARE</string>
 </resources>

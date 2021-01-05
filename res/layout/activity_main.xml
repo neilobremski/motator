@@ -9,20 +9,74 @@
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="fill_parent" 
-        android:layout_height="fill_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="0.5" />
 
-    <Button
-        android:id="@+id/my_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/my_button_text"/>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:gravity="center"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/the_text"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/hello_msg"
-        tools:context=".MainActivity" />
+        <SeekBar
+            android:id="@+id/eye_slider"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:progress="100" />
+
+        <TextView
+            android:id="@+id/txt_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txt_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="... stats here ..." />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_stop_text"/>
+
+            <Button
+                android:id="@+id/btn_play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_play_text"/>
+
+            <Button
+                android:id="@+id/btn_pause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_pause_text"/>
+
+            <Button
+                android:id="@+id/btn_share"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_share_text"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
 </LinearLayout>

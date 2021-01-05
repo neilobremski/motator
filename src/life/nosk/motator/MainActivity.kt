@@ -12,19 +12,23 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.widget.TextView
-import android.preference.PreferenceManager;
+import android.preference.PreferenceManager
+import android.location.Criteria
 
 // import androidx.core.content.ContextCompat
 
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.views.MapView
+import org.osmdroid.api.IMapController
+import org.osmdroid.util.GeoPoint
 
 class MainActivity : Activity() {
 
     private var locationManager : LocationManager? = null
-    private var thetext : TextView? = null
+    private var locationText : TextView? = null
     private var map : MapView? = null
+    private var controller : IMapController? = null
 
     override fun onCreate(savedInstanceState:Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,22 +37,25 @@ class MainActivity : Activity() {
         val ctx = getApplicationContext()
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
 
-        thetext = findViewById(R.id.the_text) as TextView
-        thetext?.text = "Created"
+        locationText = findViewById(R.id.txt_location) as TextView
 
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
 
         map = findViewById(R.id.map) as MapView
+        controller = map?.getController()
+        controller!!.zoomTo(map!!.getMaxZoomLevel() * 0.65)
         map?.setTileSource(TileSourceFactory.MAPNIK)
 
         // val context = this as Context
-        val myButton = findViewById(R.id.my_button) as Button
+        val myButton = findViewById(R.id.btn_play) as Button
         myButton.setOnClickListener {
             when {
                 checkSelfPermission(
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
                     Toast.makeText(this@MainActivity, "Location granted", Toast.LENGTH_SHORT).show()
-                    locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1L, 0f, locationListener)
+                    // use GPS only if enabled otherwise default to "NETWORK"
+                    val provider = if (locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER
+                    locationManager?.requestLocationUpdates(provider, 1L, 0f, locationListener)
                 } else -> {
                     Log.i("MOTATOR", "Requesting permissions")
                     requestPermissions(arrayOf(
@@ -56,7 +63,7 @@ class MainActivity : Activity() {
                         Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.INTERNET,
                         Manifest.permission.ACCESS_NETWORK_STATE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        //Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         ), 0)
                 }
             }
@@ -74,7 +81,8 @@ class MainActivity : Activity() {
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            thetext!!.text = ("" + location.longitude + ":" + location.latitude)
+            locationText!!.text = "Location: ${location.longitude}, ${location.latitude}"
+            controller!!.setCenter(GeoPoint(location))
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
         override fun onProviderEnabled(provider: String) {}
