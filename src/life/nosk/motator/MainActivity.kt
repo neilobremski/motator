@@ -1,6 +1,9 @@
 package life.nosk.motator
 
 import android.app.Activity
+
+import android.content.Intent
+
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -14,8 +17,6 @@ import android.location.LocationManager
 import android.widget.TextView
 import android.preference.PreferenceManager
 import android.location.Criteria
-
-// import androidx.core.content.ContextCompat
 
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -45,6 +46,20 @@ class MainActivity : Activity() {
         controller = map?.getController()
         controller!!.zoomTo(map!!.getMaxZoomLevel() * 0.65)
         map?.setTileSource(TileSourceFactory.MAPNIK)
+
+        val btnStop = findViewById(R.id.btn_stop) as Button
+        btnStop.setOnClickListener {
+            Log.i("MOTATOR", "Stop Clicked")
+            stopService(Intent(this, MotatorService::class.java))
+        }
+
+        val btnShare = findViewById(R.id.btn_share) as Button
+        btnShare.setOnClickListener {
+            Log.i("MOTATOR", "Share Clicked")
+            // startForegroundService() added in API 26 but Debian Android SDK is API 23
+            // startForegroundService(this, Intent(this, MotatorService::class.java))
+            startService(Intent(this, MotatorService::class.java))
+        }
 
         // val context = this as Context
         val myButton = findViewById(R.id.btn_play) as Button

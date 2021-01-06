@@ -1,67 +1,64 @@
 package life.nosk.motator
 
+import android.app.Notification  // Notification.Builder only in API 11+
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+
+import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.os.Message
 import android.os.Process
+
+import android.util.Log
+
 import android.widget.Toast
 
 import java.lang.Thread
 
 class MotatorService : Service() {
 
-    private var serviceLooper: Looper? = null
-    private var serviceHandler: ServiceHandler? = null
-
-    // Handler that receives messages from the thread
-    private inner class ServiceHandler(looper: Looper) : Handler(looper) {
-
-        override fun handleMessage(msg: Message) {
-            // Normally we would do some work here, like download a file.
-            // For our sample, we just sleep for 5 seconds.
-            try {
-                Thread.sleep(5000)
-            } catch (e: InterruptedException) {
-                // Restore interrupt status.
-                Thread.currentThread().interrupt()
-            }
-
-            // Stop the service using the startId, so that we don't stop
-            // the service in the middle of handling another job
-            stopSelf(msg.arg1)
+    private val locationListener: LocationListener = object : LocationListener {
+        override fun onLocationChanged(location: Location) {
+            Log.i("MOTATOR", "Location: ${location.longitude}, ${location.latitude}")
         }
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+        override fun onProviderEnabled(provider: String) {}
+        override fun onProviderDisabled(provider: String) {}
     }
 
     override fun onCreate() {
-        // Start up the thread running the service.  Note that we create a
-        // separate thread because the service normally runs in the process's
-        // main thread, which we don't want to block.  We also make it
-        // background priority so CPU-intensive work will not disrupt our UI.
-        HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND).apply {
-            start()
-
-            // Get the HandlerThread's Looper and use it for our Handler
-            serviceLooper = looper
-            serviceHandler = ServiceHandler(looper)
-        }
+        super.onCreate()
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show()
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        // For each start request, send a message to start a job and deliver the
-        // start ID so we know which request we're stopping when we finish the job
-        serviceHandler?.obtainMessage()?.also { msg ->
-            msg.arg1 = startId
-            serviceHandler?.sendMessage(msg)
-        }
+        Log.i("MOTATOR", "Starting Service")
 
-        // If we get killed, after returning from here, restart
-        return START_STICKY
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+
+        val notification = Notification.Builder(this)
+            .setContentTitle("Fuzzy Wuzzy")
+            .setContentText("Was a bear")
+            // .setSmallIcon(R.drawable.ic_android_24dp)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        startForeground(1, notification)
+
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        val provider = if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER
+        locationManager.requestLocationUpdates(provider, 1L, 0f, locationListener)
+
+        return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -70,6 +67,9 @@ class MotatorService : Service() {
     }
 
     override fun onDestroy() {
-        Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show()
+        Log.i("MOTATOR", "Destroying Service")
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        locationManager.removeUpdates(locationListener)
+        super.onDestroy()
     }
 }
