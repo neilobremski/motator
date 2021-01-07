@@ -19,7 +19,9 @@ import android.os.Process
 
 import android.util.Log
 
+import android.widget.TextView
 import android.widget.Toast
+import android.widget.RemoteViews
 
 import java.lang.Thread
 
@@ -45,14 +47,14 @@ class MotatorService : Service() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
-        val notification = Notification.Builder(this)
-            .setContentTitle("Fuzzy Wuzzy")
-            .setContentText("Was a bear")
-            // .setSmallIcon(R.drawable.ic_android_24dp)
-            .setContentIntent(pendingIntent)
-            .build()
-
+        val notification = Notification()
+        notification.contentIntent = pendingIntent
+        notification.contentView = RemoteViews(getPackageName(), R.layout.notification)
+        notification.icon = R.drawable.running_shoe  // MUST be set or API 28+ won't display
         startForeground(1, notification)
+
+        val app = getApplicationContext() as MotatorApp
+        Log.i("MOATOR", "App Name: ${app.name}")
 
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         val provider = if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER
