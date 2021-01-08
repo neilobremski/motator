@@ -42,7 +42,8 @@
             android:layout_weight="0.25"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:text="... stats here ..." />
+            android:text="... stats here ..."
+            style="@android:style/TextAppearance.Material.Headline" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -67,12 +68,14 @@
                 android:id="@+id/btn_pause"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:enabled="false"
                 android:text="@string/btn_pause_text"/>
 
             <Button
                 android:id="@+id/btn_share"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:enabled="false"
                 android:text="@string/btn_share_text"/>
 
         </LinearLayout>

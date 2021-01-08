@@ -29,7 +29,9 @@ class MotatorService : Service() {
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            Log.i("MOTATOR", "Location: ${location.longitude}, ${location.latitude}")
+            val app = getApplicationContext() as MotatorApp
+            app.locations.add(location)
+            Log.i("MOTATOR", "Location: ${location.longitude}, ${location.latitude} (${app.locations.size})")
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
         override fun onProviderEnabled(provider: String) {}
@@ -54,7 +56,7 @@ class MotatorService : Service() {
         startForeground(1, notification)
 
         val app = getApplicationContext() as MotatorApp
-        Log.i("MOATOR", "App Name: ${app.name}")
+        Log.i("MOTATOR", "App Name: ${app.name}")
 
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         val provider = if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER

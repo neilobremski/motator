@@ -15,6 +15,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.widget.TextView
+import android.widget.SeekBar
 import android.preference.PreferenceManager
 import android.location.Criteria
 
@@ -24,6 +25,8 @@ import org.osmdroid.views.MapView
 import org.osmdroid.api.IMapController
 import org.osmdroid.util.GeoPoint
 
+import kotlin.concurrent.fixedRateTimer
+
 class MainActivity : Activity() {
 
     private var locationManager : LocationManager? = null
@@ -31,12 +34,25 @@ class MainActivity : Activity() {
     private var map : MapView? = null
     private var controller : IMapController? = null
 
+    private val timer = fixedRateTimer(period = 1000L) {
+        val app = getApplicationContext() as MotatorApp
+        runOnUiThread {
+            val slider = findViewById(R.id.eye_slider) as SeekBar
+
+            if (app.locations.size > 0 && controller != null) {
+                Log.i("MOTATOR", "Timer center on: ${slider.progress}")
+                val latestLocation = app.locations[app.locations.size-1];
+                controller!!.setCenter(GeoPoint(latestLocation))
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState:Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val ctx = getApplicationContext()
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
+        val app = getApplicationContext() as MotatorApp
+        Configuration.getInstance().load(app, PreferenceManager.getDefaultSharedPreferences(app))
 
         locationText = findViewById(R.id.txt_location) as TextView
 
@@ -50,36 +66,24 @@ class MainActivity : Activity() {
         val btnStop = findViewById(R.id.btn_stop) as Button
         btnStop.setOnClickListener {
             Log.i("MOTATOR", "Stop Clicked")
-            stopService(Intent(this, MotatorService::class.java))
+            stopTracking()
         }
 
         val btnShare = findViewById(R.id.btn_share) as Button
         btnShare.setOnClickListener {
             Log.i("MOTATOR", "Share Clicked")
-            // startForegroundService() added in API 26 but Debian Android SDK is API 23
-            // startForegroundService(this, Intent(this, MotatorService::class.java))
-            startService(Intent(this, MotatorService::class.java))
         }
 
-        // val context = this as Context
-        val myButton = findViewById(R.id.btn_play) as Button
-        myButton.setOnClickListener {
+        val btnPlay = findViewById(R.id.btn_play) as Button
+        btnPlay.setOnClickListener {
+            Log.i("MOTATOR", "Play Clicked")
             when {
-                checkSelfPermission(
-                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
-                    Toast.makeText(this@MainActivity, "Location granted", Toast.LENGTH_SHORT).show()
-                    // use GPS only if enabled otherwise default to "NETWORK"
-                    val provider = if (locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER
-                    locationManager?.requestLocationUpdates(provider, 1L, 0f, locationListener)
+                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
+                    Log.i("MOTATOR", "Permissions granted")
+                    startTracking()                        
                 } else -> {
                     Log.i("MOTATOR", "Requesting permissions")
-                    requestPermissions(arrayOf(
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.INTERNET,
-                        Manifest.permission.ACCESS_NETWORK_STATE,
-                        //Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        ), 0)
+                    requestPermissions(app.requiredPermissions, 0)
                 }
             }
         }
@@ -92,15 +96,19 @@ class MainActivity : Activity() {
             Log.i("MOTATOR", "Permission results [$i]")
             Log.i("MOTATOR", "${permissions[i]} = ${grantResults[i]}")
         }
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            startTracking();
+        }
     }
 
-    private val locationListener: LocationListener = object : LocationListener {
-        override fun onLocationChanged(location: Location) {
-            locationText!!.text = "Location: ${location.longitude}, ${location.latitude}"
-            controller!!.setCenter(GeoPoint(location))
-        }
-        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-        override fun onProviderEnabled(provider: String) {}
-        override fun onProviderDisabled(provider: String) {}
+    fun startTracking() {
+        // startForegroundService() added in API 26 but Debian Android SDK is API 23
+        // startForegroundService(this, Intent(this, MotatorService::class.java))
+        startService(Intent(this, MotatorService::class.java))
+    }
+
+    fun stopTracking() {
+        stopService(Intent(this, MotatorService::class.java))
     }
 }
