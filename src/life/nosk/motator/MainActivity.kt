@@ -24,6 +24,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.views.MapView
 import org.osmdroid.api.IMapController
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.Marker
 
 import kotlin.concurrent.fixedRateTimer
 
@@ -31,18 +33,48 @@ class MainActivity : Activity() {
 
     private var locationManager : LocationManager? = null
     private var locationText : TextView? = null
+    private var statsText : TextView? = null
     private var map : MapView? = null
     private var controller : IMapController? = null
+    private val routeLine = Polyline()
+    private var lastLocation = 0
+    private var startMarker : Marker? = null
 
     private val timer = fixedRateTimer(period = 1000L) {
-        val app = getApplicationContext() as MotatorApp
         runOnUiThread {
-            val slider = findViewById(R.id.eye_slider) as SeekBar
+            var appNullable = getApplicationContext() as MotatorApp?
+            var sliderNullable = findViewById(R.id.eye_slider) as SeekBar?
 
-            if (app.locations.size > 0 && controller != null) {
-                Log.i("MOTATOR", "Timer center on: ${slider.progress}")
-                val latestLocation = app.locations[app.locations.size-1];
-                controller!!.setCenter(GeoPoint(latestLocation))
+            if (appNullable != null && sliderNullable != null) {
+                val app = appNullable
+                val slider = sliderNullable
+                if (app.locations.size > 0 && controller != null) {
+                    Log.i("MOTATOR", "Timer center on: ${slider.progress}")
+                    val latestLocation = app.locations[app.locations.size-1];
+                    locationText?.text = "Location: ${latestLocation}"
+                    statsText?.text = "${app.locations.size} GPS points"
+
+                    while (lastLocation < app.locations.size) {
+                        Log.i("MOTATOR", "Adding point: ${app.locations[lastLocation]} (${lastLocation})")
+                        routeLine.addPoint(GeoPoint(app.locations[lastLocation]))
+                        map!!.invalidate()
+                        lastLocation += 1
+                    }
+
+                    if (startMarker == null) {
+                        Log.i("MOTATOR", "Initializing start marker")
+                        startMarker = Marker(map)
+                        startMarker?.let {
+                            it.setPosition(GeoPoint(latestLocation))
+                            it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                            map!!.getOverlays().add(startMarker)
+                            it.setIcon(getResources().getDrawable(R.drawable.ic_menu_mylocation))
+                            it.title = "Start point"
+                        }
+                    }
+
+                    controller!!.setCenter(GeoPoint(latestLocation))
+                }
             }
         }
     }
@@ -55,10 +87,16 @@ class MainActivity : Activity() {
         Configuration.getInstance().load(app, PreferenceManager.getDefaultSharedPreferences(app))
 
         locationText = findViewById(R.id.txt_location) as TextView
+        statsText = findViewById(R.id.txt_stats) as TextView
 
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
 
         map = findViewById(R.id.map) as MapView
+
+        Log.i("MOTATOR", "Adding route lines")
+        map!!.getOverlayManager().add(routeLine)
+
+        Log.i("MOTATOR", "Setting Map zoom")
         controller = map?.getController()
         controller!!.zoomTo(map!!.getMaxZoomLevel() * 0.65)
         map?.setTileSource(TileSourceFactory.MAPNIK)

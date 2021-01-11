@@ -24,6 +24,6 @@
     <!-- <uses-permission a:name="android.permission.WRITE_EXTERNAL_STORAGE" /> -->
     <uses-permission a:name="android.permission.FOREGROUND_SERVICE" />
 
-    <uses-sdk a:minSdkVersion="11" a:targetSdkVersion="23" />
+    <uses-sdk a:minSdkVersion="13" a:targetSdkVersion="23" />
 
 </manifest>
