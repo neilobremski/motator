@@ -42,6 +42,8 @@ class MainActivity : Activity() {
     private val routeLine = Polyline()
     private var lastLocation = 0
     private var startMarker : Marker? = null
+    private var locationMarker : Marker? = null
+    private var tracking = false
 
     private val timer = fixedRateTimer(period = 1000L) {
         runOnUiThread {
@@ -55,7 +57,17 @@ class MainActivity : Activity() {
                     Log.i("MOTATOR", "Timer center on: ${slider.progress}")
                     val latestLocation = app.locations[app.locations.size-1];
                     locationText?.text = "Location: ${latestLocation}"
-                    statsText?.text = "${app.locations.size} GPS points"
+
+                    // calculate total distance
+                    if (lastLocation < app.locations.size && app.locations.size > 1) {
+                        var meters = 0.0
+                        for (i in 1..app.locations.size-1) {
+                            meters += app.locations[i-1].distanceTo(app.locations[i])
+                        }
+                        var km = meters / 1000.0
+                        var miles = km * 0.621371
+                        statsText?.text = "${miles} miles; ${app.locations.size} GPS points"
+                    }
 
                     while (lastLocation < app.locations.size) {
                         Log.i("MOTATOR", "Adding point: ${app.locations[lastLocation]} (${lastLocation})")
@@ -68,20 +80,41 @@ class MainActivity : Activity() {
                         Log.i("MOTATOR", "Initializing start marker")
                         startMarker = Marker(map)
                         startMarker?.let {
-                            it.setPosition(GeoPoint(latestLocation))
+                            it.setPosition(GeoPoint(GeoPoint(app.locations[0])))
                             it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                            map!!.getOverlays().add(startMarker)
+                            map!!.getOverlays().add(it)
+                            if (Build.VERSION.SDK_INT < 21) {
+                                @Suppress("DEPRECATION")
+                                it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow))
+                            } else {
+                                it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow, null))
+                            }
+                            it.title = "Start point"
+                        }
+                    }
+
+                    if (locationMarker == null) {
+                        locationMarker = Marker(map)
+                        locationMarker?.let {
+                            map!!.getOverlays().add(it)
+                            it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                            map!!.getOverlays().add(it)
                             if (Build.VERSION.SDK_INT < 21) {
                                 @Suppress("DEPRECATION")
                                 it.setIcon(getResources().getDrawable(R.drawable.ic_menu_mylocation))
                             } else {
                                 it.setIcon(getResources().getDrawable(R.drawable.ic_menu_mylocation, null))
                             }
-                            it.title = "Start point"
+                            it.title = "Current Location"
                         }
                     }
+                    locationMarker?.let {
+                        it.setPosition(GeoPoint(GeoPoint(latestLocation)))
+                    }
 
-                    controller!!.setCenter(GeoPoint(latestLocation))
+                    if (tracking == true) {
+                        controller!!.setCenter(GeoPoint(latestLocation))
+                    }
                 }
             }
         }
@@ -153,9 +186,15 @@ class MainActivity : Activity() {
             linearLayout.orientation = LinearLayout.VERTICAL
         }
 
+        // I wouldn't have to recalculate everything if I was using different layout XML's
+        // but refreshing all the UI stuff in a brand new activity XML is a pain too
         for (i in 0..linearLayout.getChildCount()-1) {
             val child = linearLayout.getChildAt(i)
             child.setLayoutParams(lp)
+            child.invalidate()
+            child.requestLayout()
+
+            // TODO: make this recursive so buttons aren't messed up
         }
 
         linearLayout.invalidate()
@@ -178,9 +217,11 @@ class MainActivity : Activity() {
         // startForegroundService() added in API 26 but Debian Android SDK is API 23
         // startForegroundService(this, Intent(this, MotatorService::class.java))
         startService(Intent(this, MotatorService::class.java))
+        tracking = true
     }
 
     fun stopTracking() {
         stopService(Intent(this, MotatorService::class.java))
+        tracking = false
     }
 }

@@ -24,5 +24,4 @@ class MotatorApp : Application() {
     override fun onCreate() {
         Log.i("MOTATOR", "Application::onCreate() (API level ${android.os.Build.VERSION.SDK_INT})")
     }
-
 }
