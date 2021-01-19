@@ -6,6 +6,7 @@ import android.content.Intent
 
 import android.os.Bundle
 import android.os.Build
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import android.widget.LinearLayout
@@ -44,6 +45,8 @@ class MainActivity : Activity() {
     private var startMarker : Marker? = null
     private var locationMarker : Marker? = null
     private var tracking = false
+
+    private val trackLines = mutableListOf<Polyline>()
 
     private val timer = fixedRateTimer(period = 1000L) {
         runOnUiThread {
@@ -123,6 +126,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState:Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        reorient(getResources().getConfiguration().orientation)
 
         val app = getApplicationContext() as MotatorApp
         Configuration.getInstance().load(app, PreferenceManager.getDefaultSharedPreferences(app))
@@ -146,11 +150,12 @@ class MainActivity : Activity() {
         btnStop.setOnClickListener {
             Log.i("MOTATOR", "Stop Clicked")
             stopTracking()
-        }
+            app.tracks.clear()
 
-        val btnShare = findViewById(R.id.btn_share) as Button
-        btnShare.setOnClickListener {
-            Log.i("MOTATOR", "Share Clicked")
+            // remove all overlay lines from map view 
+            for (trackLine in trackLines) {
+                map!!.getOverlayManager().remove(trackLine)
+            }
         }
 
         val btnPlay = findViewById(R.id.btn_play) as Button
@@ -158,7 +163,6 @@ class MainActivity : Activity() {
             Log.i("MOTATOR", "Play Clicked")
             when {
                 checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
-                    Log.i("MOTATOR", "Permissions granted")
                     startTracking()                        
                 } else -> {
                     Log.i("MOTATOR", "Requesting permissions")
@@ -166,38 +170,23 @@ class MainActivity : Activity() {
                 }
             }
         }
+
+        val btnPause = findViewById(R.id.btn_pause) as Button
+        btnPause.setOnClickListener {
+            Log.i("MOTATOR", "Pause Clicked")
+            stopTracking()
+        }
+
+        val btnShare = findViewById(R.id.btn_share) as Button
+        btnShare.setOnClickListener {
+            Log.i("MOTATOR", "Share Clicked")
+        }
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         Log.i("MOTATOR", "Configuration changed")
         super.onConfigurationChanged(newConfig)
-
-        val linearLayout = findViewById(R.id.main_layout) as LinearLayout
-        var lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 0, 0.5f)
-
-        // Checks the orientation of the screen
-        if (newConfig.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
-            Log.i("MOTATOR", "Orientation: Landscape")
-            linearLayout.orientation = LinearLayout.HORIZONTAL
-            lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.FILL_PARENT, 0.5f)
-
-        } else if (newConfig.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-            Log.i("MOTATOR", "Orientation: Portrait")
-            linearLayout.orientation = LinearLayout.VERTICAL
-        }
-
-        // I wouldn't have to recalculate everything if I was using different layout XML's
-        // but refreshing all the UI stuff in a brand new activity XML is a pain too
-        for (i in 0..linearLayout.getChildCount()-1) {
-            val child = linearLayout.getChildAt(i)
-            child.setLayoutParams(lp)
-            child.invalidate()
-            child.requestLayout()
-
-            // TODO: make this recursive so buttons aren't messed up
-        }
-
-        linearLayout.invalidate()
+        reorient(newConfig.orientation)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
@@ -210,6 +199,48 @@ class MainActivity : Activity() {
 
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             startTracking();
+        }
+    }
+
+    fun reorient(orientation : Int) {
+        val linearLayout = findViewById(R.id.main_layout) as LinearLayout
+        var lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 0, 0.5f)
+
+        // Checks the orientation of the screen
+        if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+            Log.i("MOTATOR", "Orientation: Landscape")
+            linearLayout.orientation = LinearLayout.HORIZONTAL
+            lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.FILL_PARENT, 0.5f)
+
+        } else if (orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+            Log.i("MOTATOR", "Orientation: Portrait")
+            linearLayout.orientation = LinearLayout.VERTICAL
+        }
+
+        // I wouldn't have to recalculate everything if I was using different layout XML's
+        // but refreshing all the UI stuff in a brand new activity XML is a pain too
+        for (i in 0..linearLayout.getChildCount()-1) {
+            val child = linearLayout.getChildAt(i)
+            child.setLayoutParams(lp)
+            refreshLayoutRecurse(child)
+
+            // TODO: make this recursive so buttons aren't messed up
+        }
+
+        linearLayout.invalidate()
+    }
+
+    fun refreshLayoutRecurse(view : View?) {
+        view?.let{
+            it.invalidate()
+            it.requestLayout()
+
+            var viewGroup = it as? ViewGroup?
+            if (viewGroup != null) {
+                for (i in 0..viewGroup.getChildCount()-1) {
+                    refreshLayoutRecurse(viewGroup.getChildAt(i))
+                }
+            }
         }
     }
 

@@ -7,11 +7,17 @@ import android.location.Location
 
 import android.Manifest
 
+import java.util.Calendar
+
+import kotlin.collections.List
+
 class MotatorApp : Application() {
 
     final public val name = "Motator"
 
-    final public val locations =  mutableListOf<Location>();
+    final public val locations =  mutableListOf<Location>()
+
+    final public val tracks = mutableListOf<List<Pair<Calendar,Location>>>()
 
     final public val requiredPermissions = arrayOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,

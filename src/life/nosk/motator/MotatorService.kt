@@ -24,14 +24,16 @@ import android.widget.Toast
 import android.widget.RemoteViews
 
 import java.lang.Thread
+import java.util.Calendar
 
 class MotatorService : Service() {
 
+    private val track = mutableListOf<Pair<Calendar, Location>>()
+
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            val app = getApplicationContext() as MotatorApp
-            app.locations.add(location)
-            Log.i("MOTATOR", "Location: ${location.longitude}, ${location.latitude} (${app.locations.size})")
+            Log.i("MOTATOR", "Location: ${location}")
+            track.add(Pair<Calendar, Location>(Calendar.getInstance(), location))
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
         override fun onProviderEnabled(provider: String) {}
@@ -56,7 +58,8 @@ class MotatorService : Service() {
         startForeground(1, notification)
 
         val app = getApplicationContext() as MotatorApp
-        Log.i("MOTATOR", "App Name: ${app.name}")
+        app.tracks.add(track)
+        Log.i("MOTATOR", "Track #${app.tracks.size}")
 
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         val provider = if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER

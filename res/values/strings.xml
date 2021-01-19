@@ -8,4 +8,5 @@
    <string name="btn_play_text">PLAY</string>
    <string name="btn_pause_text">PAUSE</string>
    <string name="btn_share_text">SHARE</string>
+   <string name="notification_text">Keep Motating!</string>
 </resources>
