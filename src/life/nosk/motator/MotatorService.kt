@@ -62,7 +62,19 @@ class MotatorService : Service() {
         Log.i("MOTATOR", "Track #${app.tracks.size}")
 
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-        val provider = if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER
+        for (provider in locationManager.getProviders(true)) {
+            Log.i("MOTATOR", "Enabled Location Provider: ${provider}")
+        }
+
+        val provider = if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                LocationManager.GPS_PROVIDER
+            } else {
+                val locationCriteria = android.location.Criteria()
+                locationCriteria.accuracy = android.location.Criteria.ACCURACY_FINE
+                locationManager.getBestProvider(locationCriteria, true)
+            }
+
+        Log.i("MOTATOR", "Request Location Updates (${provider})")
         locationManager.requestLocationUpdates(provider, 1L, 0f, locationListener)
 
         return START_NOT_STICKY
