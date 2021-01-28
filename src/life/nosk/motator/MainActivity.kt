@@ -31,6 +31,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.Marker
 
+import java.text.DecimalFormat
 import kotlin.concurrent.fixedRateTimer
 
 class MainActivity : Activity() {
@@ -51,6 +52,7 @@ class MainActivity : Activity() {
     private var startMarker : Marker? = null
     private var locationMarker : Marker? = null
     private var tracking = false
+    private var formatter = DecimalFormat("#,###.00")
 
     private val trackLines = mutableListOf<Polyline>()
 
@@ -67,6 +69,7 @@ class MainActivity : Activity() {
                 var latestLocation : Location? = null
                 var startLocation : Location? = null
                 var meters = 0.0
+                var points = 0
 
                 // update map lines to match recorded tracks
                 app.tracks.forEachIndexed { iTrack, track ->
@@ -79,6 +82,8 @@ class MainActivity : Activity() {
                     latestLocation = null
                     track.forEachIndexed { iPoint, calLocPair ->
                         val (cal, loc) = calLocPair
+                        points += 1
+
                         if (iPoint >= trackLine.getActualPoints().size) {
                             trackLine.addPoint(GeoPoint(loc))
                             moving = true
@@ -96,7 +101,7 @@ class MainActivity : Activity() {
                 // update stats
                 var km = meters / 1000.0
                 var miles = km * 0.621371
-                statsText?.text = "${miles} miles; ${app.locations.size} GPS points"
+                statsText?.text = "${formatter.format(miles)} miles; ${points} GPS points"
 
                 // enable/disable buttons based on whether or not moving is true
                 btnPlay!!.isEnabled = !app.tracking
@@ -127,7 +132,6 @@ class MainActivity : Activity() {
                         locationMarker?.let {
                             map!!.getOverlays().add(it)
                             it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                            map!!.getOverlays().add(it)
                             if (Build.VERSION.SDK_INT < 21) {
                                 @Suppress("DEPRECATION")
                                 it.setIcon(getResources().getDrawable(R.drawable.ic_menu_mylocation))
