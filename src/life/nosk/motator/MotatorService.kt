@@ -32,7 +32,7 @@ class MotatorService : Service() {
 
     private val locationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            Log.i("MOTATOR", "Location: ${location}")
+            Log.i("MOTATOR", "Location #${track.size}: ${location}")
             track.add(Pair<Calendar, Location>(Calendar.getInstance(), location))
         }
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
@@ -58,8 +58,9 @@ class MotatorService : Service() {
         startForeground(1, notification)
 
         val app = getApplicationContext() as MotatorApp
+        Log.i("MOTATOR", "Add Location Track #${app.tracks.size}")
         app.tracks.add(track)
-        Log.i("MOTATOR", "Track #${app.tracks.size}")
+        app.tracking = true
 
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         for (provider in locationManager.getProviders(true)) {
@@ -77,6 +78,7 @@ class MotatorService : Service() {
         Log.i("MOTATOR", "Request Location Updates (${provider})")
         locationManager.requestLocationUpdates(provider, 1L, 0f, locationListener)
 
+        Log.i("MOTATOR", "Service Started")
         return START_NOT_STICKY
     }
 
@@ -89,6 +91,11 @@ class MotatorService : Service() {
         Log.i("MOTATOR", "Destroying Service")
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         locationManager.removeUpdates(locationListener)
+
+        val app = getApplicationContext() as MotatorApp
+        app.tracking = false
+
         super.onDestroy()
+        Log.i("MOTATOR", "Service Destroyed")
     }
 }

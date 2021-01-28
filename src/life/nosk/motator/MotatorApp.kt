@@ -15,7 +15,7 @@ class MotatorApp : Application() {
 
     final public val name = "Motator"
 
-    final public val locations =  mutableListOf<Location>()
+    final public var tracking = false
 
     final public val tracks = mutableListOf<List<Pair<Calendar,Location>>>()
 

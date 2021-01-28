@@ -35,12 +35,18 @@ import kotlin.concurrent.fixedRateTimer
 
 class MainActivity : Activity() {
 
+    // UI convenience references
+    private var btnStop : Button? = null
+    private var btnPlay : Button? = null
+    private var btnPause : Button? = null
+    private var btnShare : Button? = null
+    private var slider : SeekBar? = null
+
     private var locationManager : LocationManager? = null
     private var locationText : TextView? = null
     private var statsText : TextView? = null
     private var map : MapView? = null
     private var controller : IMapController? = null
-    private val routeLine = Polyline()
     private var lastLocation = 0
     private var startMarker : Marker? = null
     private var locationMarker : Marker? = null
@@ -48,54 +54,74 @@ class MainActivity : Activity() {
 
     private val trackLines = mutableListOf<Polyline>()
 
+    // to be deleted
+    private val routeLine = Polyline()
+
     private val timer = fixedRateTimer(period = 1000L) {
         runOnUiThread {
             var appNullable = getApplicationContext() as MotatorApp?
-            var sliderNullable = findViewById(R.id.eye_slider) as SeekBar?
 
-            if (appNullable != null && sliderNullable != null) {
+            if (appNullable != null && map != null) {
                 val app = appNullable
-                val slider = sliderNullable
-                if (app.locations.size > 0 && controller != null) {
-                    Log.i("MOTATOR", "Timer center on: ${slider.progress}")
-                    val latestLocation = app.locations[app.locations.size-1];
-                    locationText?.text = "Location: ${latestLocation}"
+                var moving = false
+                var latestLocation : Location? = null
+                var startLocation : Location? = null
+                var meters = 0.0
 
-                    // calculate total distance
-                    if (lastLocation < app.locations.size && app.locations.size > 1) {
-                        var meters = 0.0
-                        for (i in 1..app.locations.size-1) {
-                            meters += app.locations[i-1].distanceTo(app.locations[i])
+                // update map lines to match recorded tracks
+                app.tracks.forEachIndexed { iTrack, track ->
+                    if (iTrack >= trackLines.size) {
+                        var newLine = Polyline()
+                        trackLines.add(newLine)
+                        map!!.getOverlayManager().add(newLine)
+                    }
+                    val trackLine = trackLines[iTrack]
+                    latestLocation = null
+                    track.forEachIndexed { iPoint, calLocPair ->
+                        val (cal, loc) = calLocPair
+                        if (iPoint >= trackLine.getActualPoints().size) {
+                            trackLine.addPoint(GeoPoint(loc))
+                            moving = true
                         }
-                        var km = meters / 1000.0
-                        var miles = km * 0.621371
-                        statsText?.text = "${miles} miles; ${app.locations.size} GPS points"
-                    }
-
-                    while (lastLocation < app.locations.size) {
-                        Log.i("MOTATOR", "Adding point: ${app.locations[lastLocation]} (${lastLocation})")
-                        routeLine.addPoint(GeoPoint(app.locations[lastLocation]))
-                        map!!.invalidate()
-                        lastLocation += 1
-                    }
-
-                    if (startMarker == null) {
-                        Log.i("MOTATOR", "Initializing start marker")
-                        startMarker = Marker(map)
-                        startMarker?.let {
-                            it.setPosition(GeoPoint(GeoPoint(app.locations[0])))
-                            it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                            map!!.getOverlays().add(it)
-                            if (Build.VERSION.SDK_INT < 21) {
-                                @Suppress("DEPRECATION")
-                                it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow))
-                            } else {
-                                it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow, null))
-                            }
-                            it.title = "Start point"
+                        if (latestLocation != null) {
+                            meters += latestLocation!!.distanceTo(loc)
+                        }
+                        latestLocation = loc
+                        if (startLocation == null) {
+                            startLocation = loc
                         }
                     }
+                }
 
+                // update stats
+                var km = meters / 1000.0
+                var miles = km * 0.621371
+                statsText?.text = "${miles} miles; ${app.locations.size} GPS points"
+
+                // enable/disable buttons based on whether or not moving is true
+                btnPlay!!.isEnabled = !app.tracking
+                btnPause!!.isEnabled = app.tracking
+
+                // initialize starting position marker
+                if (moving && startMarker == null && startLocation != null) {
+                    Log.i("MOTATOR", "Initializing start marker")
+                    startMarker = Marker(map)
+                    startMarker?.let {
+                        it.setPosition(GeoPoint(GeoPoint(startLocation)))
+                        it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        map!!.getOverlays().add(it)
+                        if (Build.VERSION.SDK_INT < 21) {
+                            @Suppress("DEPRECATION")
+                            it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow))
+                        } else {
+                            it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow, null))
+                        }
+                        it.title = "Start point"
+                    }
+                }
+
+                // update position marker
+                if (moving && latestLocation != null) {
                     if (locationMarker == null) {
                         locationMarker = Marker(map)
                         locationMarker?.let {
@@ -114,10 +140,11 @@ class MainActivity : Activity() {
                     locationMarker?.let {
                         it.setPosition(GeoPoint(GeoPoint(latestLocation)))
                     }
+                }
 
-                    if (tracking == true) {
-                        controller!!.setCenter(GeoPoint(latestLocation))
-                    }
+                // center map view on current location
+                if (moving && latestLocation != null) {
+                    controller!!.setCenter(GeoPoint(latestLocation))
                 }
             }
         }
@@ -138,28 +165,35 @@ class MainActivity : Activity() {
 
         map = findViewById(R.id.map) as MapView
 
-        Log.i("MOTATOR", "Adding route lines")
-        map!!.getOverlayManager().add(routeLine)
-
         Log.i("MOTATOR", "Setting Map zoom")
         controller = map?.getController()
         controller!!.zoomTo(map!!.getMaxZoomLevel() * 0.65)
         map?.setTileSource(TileSourceFactory.MAPNIK)
 
-        val btnStop = findViewById(R.id.btn_stop) as Button
-        btnStop.setOnClickListener {
+        btnStop = findViewById(R.id.btn_stop) as Button?
+        btnStop!!.setOnClickListener {
             Log.i("MOTATOR", "Stop Clicked")
             stopTracking()
             app.tracks.clear()
 
-            // remove all overlay lines from map view 
-            for (trackLine in trackLines) {
-                map!!.getOverlayManager().remove(trackLine)
+            // remove all overlay lines from map view
+            val overlays = map!!.getOverlayManager()
+            if (locationMarker != null) {
+                overlays.remove(locationMarker)
+                locationMarker = null
             }
+            if (startMarker != null) {
+                overlays.remove(startMarker)
+                startMarker = null
+            }
+            for (trackLine in trackLines) {
+                overlays.remove(trackLine)
+            }
+            map!!.invalidate()
         }
 
-        val btnPlay = findViewById(R.id.btn_play) as Button
-        btnPlay.setOnClickListener {
+        btnPlay = findViewById(R.id.btn_play) as Button
+        btnPlay!!.setOnClickListener {
             Log.i("MOTATOR", "Play Clicked")
             when {
                 checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
@@ -171,14 +205,14 @@ class MainActivity : Activity() {
             }
         }
 
-        val btnPause = findViewById(R.id.btn_pause) as Button
-        btnPause.setOnClickListener {
+        btnPause = findViewById(R.id.btn_pause) as Button
+        btnPause!!.setOnClickListener {
             Log.i("MOTATOR", "Pause Clicked")
             stopTracking()
         }
 
-        val btnShare = findViewById(R.id.btn_share) as Button
-        btnShare.setOnClickListener {
+        btnShare = findViewById(R.id.btn_share) as Button
+        btnShare!!.setOnClickListener {
             Log.i("MOTATOR", "Share Clicked")
         }
     }
