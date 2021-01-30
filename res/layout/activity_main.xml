@@ -29,24 +29,43 @@
             android:progress="100"
             style="@android:style/Widget.Material.SeekBar" />
 
-        <TextView
-            android:id="@+id/txt_location"
+        <!-- stats table -->
+        <TableLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            style="@android:style/TextAppearance.Material.Medium" />
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:stretchColumns="1">
 
-        <TextView
-            android:id="@+id/txt_stats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:text="... stats here ..."
-            style="@android:style/TextAppearance.DeviceDefault.Medium" />
+            <TableRow>
+                <TextView
+                    android:id="@+id/txt_distance"
+                    android:text="000.00"
+                    android:padding="3dip"
+                    style="@android:style/TextAppearance.DeviceDefault.Large" />
+                <TextView
+                    android:id="@+id/txt_elapsed"
+                    android:text="000:00"
+                    android:gravity="right"
+                    android:padding="3dip"
+                    style="@android:style/TextAppearance.DeviceDefault.Large" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:id="@+id/txt_pace_1"
+                    android:text="00:00"
+                    android:padding="3dip"
+                    style="@android:style/TextAppearance.DeviceDefault.Large" />
+
+                <TextView
+                    android:id="@+id/txt_pace_2"
+                    android:text="00:00"
+                    android:gravity="right"
+                    android:padding="3dip"
+                    style="@android:style/TextAppearance.DeviceDefault.Large" />
+            </TableRow>
+
+        </TableLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

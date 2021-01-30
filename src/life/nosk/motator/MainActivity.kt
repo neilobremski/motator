@@ -43,21 +43,22 @@ class MainActivity : Activity() {
     private var btnShare : Button? = null
     private var slider : SeekBar? = null
 
+    // stats UI references and formatters
+    private var txtDistance : TextView? = null
+    private var txtElapsed : TextView? = null
+    private var txtPace1 : TextView? = null
+    private var txtPace2 : TextView? = null
+    private var distanceFormatter = DecimalFormat("000.00")
+
     private var locationManager : LocationManager? = null
-    private var locationText : TextView? = null
-    private var statsText : TextView? = null
     private var map : MapView? = null
     private var controller : IMapController? = null
     private var lastLocation = 0
     private var startMarker : Marker? = null
     private var locationMarker : Marker? = null
     private var tracking = false
-    private var formatter = DecimalFormat("#,###.00")
 
     private val trackLines = mutableListOf<Polyline>()
-
-    // to be deleted
-    private val routeLine = Polyline()
 
     private val timer = fixedRateTimer(period = 1000L) {
         runOnUiThread {
@@ -69,7 +70,8 @@ class MainActivity : Activity() {
                 var latestLocation : Location? = null
                 var startLocation : Location? = null
                 var meters = 0.0
-                var points = 0
+                var points = 0  // total miles
+                var millis = 0  // total milliseconds
 
                 // update map lines to match recorded tracks
                 app.tracks.forEachIndexed { iTrack, track ->
@@ -101,7 +103,7 @@ class MainActivity : Activity() {
                 // update stats
                 var km = meters / 1000.0
                 var miles = km * 0.621371
-                statsText?.text = "${formatter.format(miles)} miles; ${points} GPS points"
+                txtDistance?.text = distanceFormatter.format(miles)
 
                 // enable/disable buttons based on whether or not moving is true
                 btnPlay!!.isEnabled = !app.tracking
@@ -162,8 +164,11 @@ class MainActivity : Activity() {
         val app = getApplicationContext() as MotatorApp
         Configuration.getInstance().load(app, PreferenceManager.getDefaultSharedPreferences(app))
 
-        locationText = findViewById(R.id.txt_location) as TextView
-        statsText = findViewById(R.id.txt_stats) as TextView
+        // wire up stats UI components to properties
+        txtDistance = findViewById(R.id.txt_distance) as TextView
+        txtElapsed = findViewById(R.id.txt_elapsed) as TextView
+        txtPace1 = findViewById(R.id.txt_pace_1) as TextView
+        txtPace2 = findViewById(R.id.txt_pace_2) as TextView
 
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
 
@@ -193,6 +198,7 @@ class MainActivity : Activity() {
             for (trackLine in trackLines) {
                 overlays.remove(trackLine)
             }
+            trackLines.clear()
             map!!.invalidate()
         }
 
