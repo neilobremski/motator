@@ -32,6 +32,7 @@ import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.Marker
 
 import java.text.DecimalFormat
+import java.util.Calendar
 import kotlin.concurrent.fixedRateTimer
 
 class MainActivity : Activity() {
@@ -44,11 +45,14 @@ class MainActivity : Activity() {
     private var slider : SeekBar? = null
 
     // stats UI references and formatters
-    private var txtDistance : TextView? = null
+    private var txtMiles : TextView? = null
+    private var txtKilometers : TextView? = null
+    private var txtPaceMiles : TextView? = null
+    private var txtPaceKilometers : TextView? = null
+    private var txtStarted : TextView? = null
     private var txtElapsed : TextView? = null
-    private var txtPace1 : TextView? = null
-    private var txtPace2 : TextView? = null
     private var distanceFormatter = DecimalFormat("000.00")
+    private var timeFormatter = DecimalFormat("#00")
 
     private var locationManager : LocationManager? = null
     private var map : MapView? = null
@@ -69,9 +73,11 @@ class MainActivity : Activity() {
                 var moving = false
                 var latestLocation : Location? = null
                 var startLocation : Location? = null
-                var meters = 0.0
-                var points = 0  // total miles
-                var millis = 0  // total milliseconds
+                var latestCalendar : Calendar? = null
+                var startCalendar : Calendar? = null
+                var meters = 0.0  // total meters (distance)
+                var points = 0  // total GPS points
+                var millis = 0L  // total milliseconds
 
                 // update map lines to match recorded tracks
                 app.tracks.forEachIndexed { iTrack, track ->
@@ -93,9 +99,16 @@ class MainActivity : Activity() {
                         if (latestLocation != null) {
                             meters += latestLocation!!.distanceTo(loc)
                         }
+                        if (latestCalendar != null) {
+                            millis += (cal.getTimeInMillis() - latestCalendar!!.getTimeInMillis())
+                        }
                         latestLocation = loc
+                        latestCalendar = cal
                         if (startLocation == null) {
                             startLocation = loc
+                        }
+                        if (startCalendar == null) {
+                            startCalendar = cal
                         }
                     }
                 }
@@ -103,7 +116,21 @@ class MainActivity : Activity() {
                 // update stats
                 var km = meters / 1000.0
                 var miles = km * 0.621371
-                txtDistance?.text = distanceFormatter.format(miles)
+                txtMiles?.text = distanceFormatter.format(miles)
+                txtKilometers?.text = distanceFormatter.format(km)
+                // txtStarted?.text = ""
+                var seconds = (millis / 1000).toInt()
+                var minutes = seconds / 60
+                seconds -= (minutes * 60)
+                // txtElapsed?.text = "${timeFormatter.format(minutes)}:${timeFormatter.format(seconds)}"
+                seconds = (millis / miles).toInt() / 1000
+                minutes = seconds / 60
+                seconds -= (minutes * 60)
+                txtPaceMiles?.text = "${timeFormatter.format(minutes)}:${timeFormatter.format(seconds)}"
+                seconds = (millis / km).toInt() / 1000
+                minutes = seconds / 60
+                seconds -= (minutes * 60)
+                txtPaceKilometers?.text = "${timeFormatter.format(minutes)}:${timeFormatter.format(seconds)}"
 
                 // enable/disable buttons based on whether or not moving is true
                 btnPlay!!.isEnabled = !app.tracking
@@ -165,10 +192,12 @@ class MainActivity : Activity() {
         Configuration.getInstance().load(app, PreferenceManager.getDefaultSharedPreferences(app))
 
         // wire up stats UI components to properties
-        txtDistance = findViewById(R.id.txt_distance) as TextView
+        txtMiles = findViewById(R.id.txt_miles) as TextView
+        txtKilometers = findViewById(R.id.txt_kilometers) as TextView
+        txtPaceMiles = findViewById(R.id.txt_pace_miles) as TextView
+        txtPaceKilometers = findViewById(R.id.txt_pace_kilometers) as TextView
+        txtStarted = findViewById(R.id.txt_started) as TextView
         txtElapsed = findViewById(R.id.txt_elapsed) as TextView
-        txtPace1 = findViewById(R.id.txt_pace_1) as TextView
-        txtPace2 = findViewById(R.id.txt_pace_2) as TextView
 
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
 

@@ -25,7 +25,7 @@
             android:id="@+id/eye_slider"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
+            android:layout_weight="0.2"
             android:progress="100"
             style="@android:style/Widget.Material.SeekBar" />
 
@@ -33,36 +33,117 @@
         <TableLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.5"
-            android:stretchColumns="1">
+            android:layout_weight="0.6"
+            android:stretchColumns="*">
 
             <TableRow>
                 <TextView
-                    android:id="@+id/txt_distance"
+                    android:id="@+id/txt_miles"
                     android:text="000.00"
                     android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="left|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
                 <TextView
-                    android:id="@+id/txt_elapsed"
-                    android:text="000:00"
-                    android:gravity="right"
+                    android:id="@+id/txt_kilometers"
+                    android:text="000.00"
                     android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="right|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
             </TableRow>
 
             <TableRow>
                 <TextView
-                    android:id="@+id/txt_pace_1"
+                    android:text="miles"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="left|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Small" />
+                <TextView
+                    android:text="kilometers"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="right|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Small" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:id="@+id/txt_pace_miles"
                     android:text="00:00"
                     android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="left|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
 
                 <TextView
-                    android:id="@+id/txt_pace_2"
-                    android:text="00:00"
-                    android:gravity="right"
+                    android:id="@+id/txt_pace_kilometers"
+                    android:text="000:00"
                     android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="right|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:text="pace per mile"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="left|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Small" />
+                <TextView
+                    android:text="pace per km"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="right|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Small" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:id="@+id/txt_started"
+                    android:text="00:00:00"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="left|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Large" />
+
+                <TextView
+                    android:id="@+id/txt_elapsed"
+                    android:text="000:00"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="right|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Large" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:text="started"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="left|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Small" />
+                <TextView
+                    android:text="elapsed"
+                    android:padding="3dip"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="right|center_vertical"
+                    style="@android:style/TextAppearance.DeviceDefault.Small" />
             </TableRow>
 
         </TableLayout>
@@ -70,7 +151,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
+            android:layout_weight="0.2"
             android:gravity="center"
             android:orientation="horizontal">
 
