@@ -62,6 +62,7 @@ class MainActivity : Activity() {
     private var lastLocation = 0
     private var startMarker : Marker? = null
     private var locationMarker : Marker? = null
+    private var mileMarkers = mutableListOf<Marker>()
     private var tracking = false
 
     private val trackLines = mutableListOf<Polyline>()
@@ -80,6 +81,8 @@ class MainActivity : Activity() {
                 var meters = 0.0  // total meters (distance)
                 var points = 0  // total GPS points
                 var millis = 0L  // total milliseconds
+                var milepost = 0.0  // incrementer for marking miles
+                var mileIndex = 0  // current mile index (for markers)
 
                 // update map lines to match recorded tracks
                 app.tracks.forEachIndexed { iTrack, track ->
@@ -99,7 +102,16 @@ class MainActivity : Activity() {
                             moving = true
                         }
                         if (latestLocation != null) {
-                            meters += latestLocation!!.distanceTo(loc)
+                            val meterIncrement = latestLocation!!.distanceTo(loc)
+                            meters += meterIncrement
+                            milepost += (meterIncrement * 0.000621371)
+                            if (milepost >= 1.0) {
+                                if (mileIndex >= mileMarkers.size) {
+                                    mileMarkers.add(addMarker(mileIcon(mileIndex), "Mile ${mileIndex+1}"))
+                                }
+                                milepost -= 1.0
+                                mileIndex += 1
+                            }
                         }
                         if (latestCalendar != null) {
                             millis += (cal.getTimeInMillis() - latestCalendar!!.getTimeInMillis())
@@ -117,7 +129,7 @@ class MainActivity : Activity() {
 
                 // update stats
                 var km = meters / 1000.0
-                var miles = km * 0.621371
+                var miles = meters * 0.000621371  // km * 0.621371
                 txtMiles?.text = distanceFormatter.format(miles)
                 txtKilometers?.text = distanceFormatter.format(km)
                 if (startCalendar != null) {
@@ -142,37 +154,13 @@ class MainActivity : Activity() {
 
                 // initialize starting position marker
                 if (moving && startMarker == null && startLocation != null) {
-                    Log.i("MOTATOR", "Initializing start marker")
-                    startMarker = Marker(map)
-                    startMarker?.let {
-                        it.setPosition(GeoPoint(GeoPoint(startLocation)))
-                        it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                        map!!.getOverlays().add(it)
-                        if (Build.VERSION.SDK_INT < 21) {
-                            @Suppress("DEPRECATION")
-                            it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow))
-                        } else {
-                            it.setIcon(getResources().getDrawable(R.drawable.moreinfo_arrow, null))
-                        }
-                        it.title = "Start point"
-                    }
+                    startMarker = addMarker(R.drawable.moreinfo_arrow, "Starting Point")  // TODO: localize
                 }
 
                 // update position marker
                 if (moving && latestLocation != null) {
                     if (locationMarker == null) {
-                        locationMarker = Marker(map)
-                        locationMarker?.let {
-                            map!!.getOverlays().add(it)
-                            it.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                            if (Build.VERSION.SDK_INT < 21) {
-                                @Suppress("DEPRECATION")
-                                it.setIcon(getResources().getDrawable(R.drawable.ic_menu_mylocation))
-                            } else {
-                                it.setIcon(getResources().getDrawable(R.drawable.ic_menu_mylocation, null))
-                            }
-                            it.title = "Current Location"
-                        }
+                        locationMarker = addMarker(R.drawable.ic_menu_mylocation, "Current Location") // TODO: localize
                     }
                     locationMarker?.let {
                         it.setPosition(GeoPoint(GeoPoint(latestLocation)))
@@ -232,6 +220,10 @@ class MainActivity : Activity() {
                 overlays.remove(trackLine)
             }
             trackLines.clear()
+            for (mileMarker in mileMarkers) {
+                overlays.remove(mileMarker)
+            }
+            mileMarkers.clear()
             map!!.invalidate()
         }
 
@@ -275,8 +267,27 @@ class MainActivity : Activity() {
         }
 
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            startTracking();
+            startTracking()
         }
+    }
+
+    fun mileIcon(mile : Int) {
+        return R.drawable.ic_menu_mylocation
+    }
+
+    fun addMarker(icon : Int, title : String) : Marker {
+        Log.i("MOTATOR", "Marker: ${title} (${icon})")
+        val marker = Marker(map)
+        map!!.getOverlays().add(marker)
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+        if (Build.VERSION.SDK_INT < 21) {
+            @Suppress("DEPRECATION")
+            marker.setIcon(getResources().getDrawable(icon))
+        } else {
+            marker.setIcon(getResources().getDrawable(icon, null))
+        }
+        marker.title = title
+        return marker
     }
 
     fun reorient(orientation : Int) {
