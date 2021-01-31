@@ -15,5 +15,7 @@
    <string name="label_pace_kilometers">pace per kilometer</string>
    <string name="label_started">started</string>
    <string name="label_elapsed">elapsed</string>
-
+   <string name="marker_title_start">Starting Point</string>
+   <string name="marker_title_location">Current Location</string>
+   <string name="marker_title_mile">Mile Marker</string>
 </resources>

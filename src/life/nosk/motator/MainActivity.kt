@@ -107,7 +107,7 @@ class MainActivity : Activity() {
                             milepost += (meterIncrement * 0.000621371)
                             if (milepost >= 1.0) {
                                 if (mileIndex >= mileMarkers.size) {
-                                    mileMarkers.add(addMarker(mileIcon(mileIndex), "Mile ${mileIndex+1}"))
+                                    mileMarkers.add(addMarker(mileIcon(mileIndex), getString(R.string.marker_title_mile)))
                                 }
                                 milepost -= 1.0
                                 mileIndex += 1
@@ -154,13 +154,13 @@ class MainActivity : Activity() {
 
                 // initialize starting position marker
                 if (moving && startMarker == null && startLocation != null) {
-                    startMarker = addMarker(R.drawable.moreinfo_arrow, "Starting Point")  // TODO: localize
+                    startMarker = addMarker(R.drawable.moreinfo_arrow, getString(R.string.marker_title_start))
                 }
 
                 // update position marker
                 if (moving && latestLocation != null) {
                     if (locationMarker == null) {
-                        locationMarker = addMarker(R.drawable.ic_menu_mylocation, "Current Location") // TODO: localize
+                        locationMarker = addMarker(R.drawable.ic_menu_mylocation, getString(R.string.marker_title_location))
                     }
                     locationMarker?.let {
                         it.setPosition(GeoPoint(GeoPoint(latestLocation)))
