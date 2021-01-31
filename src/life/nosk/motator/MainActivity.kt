@@ -160,7 +160,7 @@ class MainActivity : Activity() {
                 // update position marker
                 if (moving && latestLocation != null) {
                     if (locationMarker == null) {
-                        locationMarker = addMarker(R.drawable.ic_menu_mylocation, "Current Location") // TODO: localize
+                        locationMarker = addMarker(R.drawable.mile_1 /*ic_menu_mylocation*/, "Current Location") // TODO: localize
                     }
                     locationMarker?.let {
                         it.setPosition(GeoPoint(GeoPoint(latestLocation)))
@@ -271,7 +271,22 @@ class MainActivity : Activity() {
         }
     }
 
-    fun mileIcon(mile : Int) {
+    fun mileIcon(mile : Int) : Int {
+        when (mile) {
+            0 -> return R.drawable.mile_1
+            1 -> return R.drawable.mile_2
+            2 -> return R.drawable.mile_3
+            3 -> return R.drawable.mile_4
+            4 -> return R.drawable.mile_5
+            5 -> return R.drawable.mile_6
+            6 -> return R.drawable.mile_7
+            7 -> return R.drawable.mile_8
+            8 -> return R.drawable.mile_9
+            9 -> return R.drawable.mile_10
+            10-> return R.drawable.mile_11
+            11-> return R.drawable.mile_12
+            12-> return R.drawable.mile_13
+        }
         return R.drawable.ic_menu_mylocation
     }
 
