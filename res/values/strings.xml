@@ -4,9 +4,16 @@
    Speed: 7.62 MPH ... Pace: 7:45</string>
    <string name="menu_settings">Settings</string>
    <string name="title_activity_main">Motator</string>
-   <string name="btn_stop_text">STOP</string>
-   <string name="btn_play_text">PLAY</string>
+   <string name="btn_stop_text">RESET</string>
+   <string name="btn_play_text">START</string>
    <string name="btn_pause_text">PAUSE</string>
-   <string name="btn_share_text">SHARE</string>
+   <string name="btn_share_text">EXPORT</string>
    <string name="notification_text">Keep Motating!</string>
+   <string name="label_miles">miles</string>
+   <string name="label_kilometers">kilometers</string>
+   <string name="label_pace_miles">pace per mile</string>
+   <string name="label_pace_kilometers">pace per kilometer</string>
+   <string name="label_started">started</string>
+   <string name="label_elapsed">elapsed</string>
+
 </resources>

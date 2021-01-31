@@ -11,11 +11,11 @@
         android:id="@+id/map"
         android:layout_width="fill_parent" 
         android:layout_height="0dp"
-        android:layout_weight="0.5" />
+        android:layout_weight="1" />
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="0.5"
         android:layout_margin="5dp"
         android:gravity="center"
@@ -25,15 +25,13 @@
             android:id="@+id/eye_slider"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2"
             android:progress="100"
             style="@android:style/Widget.Material.SeekBar" />
 
         <!-- stats table -->
         <TableLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.6"
+            android:layout_height="wrap_content"
             android:stretchColumns="*">
 
             <TableRow>
@@ -57,17 +55,17 @@
 
             <TableRow>
                 <TextView
-                    android:text="miles"
+                    android:text="@string/label_miles"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="left|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Small" />
                 <TextView
-                    android:text="kilometers"
+                    android:text="@string/label_kilometers"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="right|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Small" />
             </TableRow>
@@ -78,7 +76,7 @@
                     android:text="00:00"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="left|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
 
@@ -87,24 +85,24 @@
                     android:text="000:00"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="right|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
             </TableRow>
 
             <TableRow>
                 <TextView
-                    android:text="pace per mile"
+                    android:text="@string/label_pace_miles"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="left|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Small" />
                 <TextView
-                    android:text="pace per km"
+                    android:text="@string/label_pace_kilometers"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="right|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Small" />
             </TableRow>
@@ -115,7 +113,7 @@
                     android:text="00:00:00"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="left|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
 
@@ -124,21 +122,21 @@
                     android:text="000:00"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="right|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Large" />
             </TableRow>
 
             <TableRow>
                 <TextView
-                    android:text="started"
+                    android:text="@string/label_started"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:gravity="left|center_vertical"
                     style="@android:style/TextAppearance.DeviceDefault.Small" />
                 <TextView
-                    android:text="elapsed"
+                    android:text="@string/label_elapsed"
                     android:padding="3dip"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
@@ -151,32 +149,35 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2"
             android:gravity="center"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btn_stop"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:text="@string/btn_stop_text"/>
 
             <Button
                 android:id="@+id/btn_play"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:text="@string/btn_play_text"/>
 
             <Button
                 android:id="@+id/btn_pause"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:text="@string/btn_pause_text"/>
 
             <Button
                 android:id="@+id/btn_share"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:enabled="false"
                 android:text="@string/btn_share_text"/>
 
