@@ -31,6 +31,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.Marker
 
+import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Calendar
 import kotlin.concurrent.fixedRateTimer
@@ -51,8 +52,9 @@ class MainActivity : Activity() {
     private var txtPaceKilometers : TextView? = null
     private var txtStarted : TextView? = null
     private var txtElapsed : TextView? = null
-    private var distanceFormatter = DecimalFormat("000.00")
-    private var timeFormatter = DecimalFormat("#00")
+    private val distanceFormatter = DecimalFormat("000.00")
+    private val timeFormatter = DecimalFormat("#00")
+    private val dateFormatter = DateFormat.getTimeInstance(DateFormat.SHORT)
 
     private var locationManager : LocationManager? = null
     private var map : MapView? = null
@@ -118,11 +120,13 @@ class MainActivity : Activity() {
                 var miles = km * 0.621371
                 txtMiles?.text = distanceFormatter.format(miles)
                 txtKilometers?.text = distanceFormatter.format(km)
-                // txtStarted?.text = ""
+                if (startCalendar != null) {
+                    txtStarted?.text = dateFormatter.format(startCalendar!!.getTime())
+                }
                 var seconds = (millis / 1000).toInt()
                 var minutes = seconds / 60
                 seconds -= (minutes * 60)
-                // txtElapsed?.text = "${timeFormatter.format(minutes)}:${timeFormatter.format(seconds)}"
+                txtElapsed?.text = "${timeFormatter.format(minutes)}:${timeFormatter.format(seconds)}"
                 seconds = (millis / miles).toInt() / 1000
                 minutes = seconds / 60
                 seconds -= (minutes * 60)
