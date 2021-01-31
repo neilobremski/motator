@@ -160,7 +160,7 @@ class MainActivity : Activity() {
                 // update position marker
                 if (moving && latestLocation != null) {
                     if (locationMarker == null) {
-                        locationMarker = addMarker(R.drawable.mile_1 /*ic_menu_mylocation*/, "Current Location") // TODO: localize
+                        locationMarker = addMarker(R.drawable.ic_menu_mylocation, "Current Location") // TODO: localize
                     }
                     locationMarker?.let {
                         it.setPosition(GeoPoint(GeoPoint(latestLocation)))
