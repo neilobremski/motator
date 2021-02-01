@@ -67,6 +67,9 @@ class MainActivity : Activity() {
 
     private val trackLines = mutableListOf<Polyline>()
 
+    private var startLocation : Location? = null
+    private var latestLocation : Location? = null
+
     private val timer = fixedRateTimer(period = 1000L) {
         runOnUiThread {
             var appNullable = getApplicationContext() as MotatorApp?
@@ -85,7 +88,11 @@ class MainActivity : Activity() {
                 var mileIndex = 0  // current mile index (for markers)
 
                 // update map lines to match recorded tracks
-                app.tracks.forEachIndexed { iTrack, track ->
+                for (iTrack in 0..app.tracks.size-1) {
+                    if (iTrack >= app.tracks.size) {
+                        break
+                    }
+                    val track = app.tracks[iTrack]
                     if (iTrack >= trackLines.size) {
                         var newLine = Polyline()
                         trackLines.add(newLine)
@@ -93,8 +100,11 @@ class MainActivity : Activity() {
                     }
                     val trackLine = trackLines[iTrack]
                     latestLocation = null
-                    track.forEachIndexed { iPoint, calLocPair ->
-                        val (cal, loc) = calLocPair
+                    for (iPoint in 0..track.size) {
+                        if (iPoint >= track.size) {
+                            break
+                        }
+                        val (cal, loc) = track[iPoint]
                         points += 1
 
                         if (iPoint >= trackLine.getActualPoints().size) {
@@ -102,19 +112,19 @@ class MainActivity : Activity() {
                             moving = true
                         }
                         if (latestLocation != null) {
-                            val meterIncrement = latestLocation!!.distanceTo(loc)
+                            val meterIncrement = latestLocation.distanceTo(loc)
                             meters += meterIncrement
                             milepost += (meterIncrement * 0.000621371)
                             if (milepost >= 1.0) {
                                 if (mileIndex >= mileMarkers.size) {
-                                    mileMarkers.add(addMarker(mileIcon(mileIndex), getString(R.string.marker_title_mile)))
+                                    mileMarkers.add(addMarker(loc, mileIcon(mileIndex), getString(R.string.marker_title_mile)))
                                 }
                                 milepost -= 1.0
                                 mileIndex += 1
                             }
                         }
                         if (latestCalendar != null) {
-                            millis += (cal.getTimeInMillis() - latestCalendar!!.getTimeInMillis())
+                            millis += (cal.getTimeInMillis() - latestCalendar.getTimeInMillis())
                         }
                         latestLocation = loc
                         latestCalendar = cal
@@ -133,7 +143,7 @@ class MainActivity : Activity() {
                 txtMiles?.text = distanceFormatter.format(miles)
                 txtKilometers?.text = distanceFormatter.format(km)
                 if (startCalendar != null) {
-                    txtStarted?.text = dateFormatter.format(startCalendar!!.getTime())
+                    txtStarted?.text = dateFormatter.format(startCalendar.getTime())
                 }
                 var seconds = (millis / 1000).toInt()
                 var minutes = seconds / 60
@@ -154,16 +164,15 @@ class MainActivity : Activity() {
 
                 // initialize starting position marker
                 if (moving && startMarker == null && startLocation != null) {
-                    startMarker = addMarker(R.drawable.moreinfo_arrow, getString(R.string.marker_title_start))
+                    startMarker = addMarker(startLocation, R.drawable.moreinfo_arrow, getString(R.string.marker_title_start))
                 }
 
                 // update position marker
                 if (moving && latestLocation != null) {
                     if (locationMarker == null) {
-                        locationMarker = addMarker(R.drawable.ic_menu_mylocation, getString(R.string.marker_title_location))
-                    }
-                    locationMarker?.let {
-                        it.setPosition(GeoPoint(GeoPoint(latestLocation)))
+                        locationMarker = addMarker(latestLocation, R.drawable.ic_menu_mylocation, getString(R.string.marker_title_location))
+                    } else {
+                        locationMarker!!.setPosition(GeoPoint(latestLocation))
                     }
                 }
 
@@ -290,7 +299,7 @@ class MainActivity : Activity() {
         return R.drawable.ic_menu_mylocation
     }
 
-    fun addMarker(icon : Int, title : String) : Marker {
+    fun addMarker(loc : Location, icon : Int, title : String) : Marker {
         Log.i("MOTATOR", "Marker: ${title} (${icon})")
         val marker = Marker(map)
         map!!.getOverlays().add(marker)
@@ -302,18 +311,28 @@ class MainActivity : Activity() {
             marker.setIcon(getResources().getDrawable(icon, null))
         }
         marker.title = title
+        marker.setPosition(GeoPoint(loc))
         return marker
     }
 
     fun reorient(orientation : Int) {
         val linearLayout = findViewById(R.id.main_layout) as LinearLayout
-        var lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 0, 0.5f)
+
+        // int value is unchanged but field name DID change
+        val MATCH_PARENT = if (Build.VERSION.SDK_INT < 8) {
+            @Suppress("DEPRECATION")
+            ViewGroup.LayoutParams.FILL_PARENT
+        } else {
+            ViewGroup.LayoutParams.MATCH_PARENT
+        }
+
+        var lp = LinearLayout.LayoutParams(MATCH_PARENT, 0, 0.5f)
 
         // Checks the orientation of the screen
         if (orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
             Log.i("MOTATOR", "Orientation: Landscape")
             linearLayout.orientation = LinearLayout.HORIZONTAL
-            lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.FILL_PARENT, 0.5f)
+            lp = LinearLayout.LayoutParams(0, MATCH_PARENT, 0.5f)
 
         } else if (orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
             Log.i("MOTATOR", "Orientation: Portrait")
