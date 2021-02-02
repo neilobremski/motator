@@ -63,7 +63,7 @@ class MainActivity : Activity() {
     private var startMarker : Marker? = null
     private var locationMarker : Marker? = null
     private var mileMarkers = mutableListOf<Marker>()
-    private var tracking = false
+    private var timerGo = false
 
     private val trackLines = mutableListOf<Polyline>()
 
@@ -74,7 +74,7 @@ class MainActivity : Activity() {
         runOnUiThread {
             var appNullable = getApplicationContext() as MotatorApp?
 
-            if (appNullable != null && map != null) {
+            if (timerGo && appNullable != null && map != null) {
                 val app = appNullable
                 var moving = false
                 var latestLocation : Location? = null
@@ -280,6 +280,18 @@ class MainActivity : Activity() {
         }
     }
 
+    override fun onResume() {
+        Log.i("MOTATOR", "onResume")
+        timerGo = true
+        super.onResume()
+    }
+
+    override fun onPause() {
+        Log.i("MOTATOR", "onPause")
+        timerGo = false
+        super.onPause()
+    }
+
     fun mileIcon(mile : Int) : Int {
         when (mile) {
             0 -> return R.drawable.mile_1
@@ -302,7 +314,7 @@ class MainActivity : Activity() {
     fun addMarker(loc : Location, icon : Int, title : String) : Marker {
         Log.i("MOTATOR", "Marker: ${title} (${icon})")
         val marker = Marker(map)
-        map!!.getOverlays().add(marker)
+        map!!.getOverlayManager().add(marker)
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
         if (Build.VERSION.SDK_INT < 21) {
             @Suppress("DEPRECATION")
@@ -370,11 +382,9 @@ class MainActivity : Activity() {
         // startForegroundService() added in API 26 but Debian Android SDK is API 23
         // startForegroundService(this, Intent(this, MotatorService::class.java))
         startService(Intent(this, MotatorService::class.java))
-        tracking = true
     }
 
     fun stopTracking() {
         stopService(Intent(this, MotatorService::class.java))
-        tracking = false
     }
 }
